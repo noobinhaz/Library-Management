@@ -160,7 +160,7 @@ function updateauthor($input, $db, $authorId)
 
 function getParams($input)
 {
-    $allowedFields = ['author'];
+    $allowedFields = ['name'];
     $filterParams = [];
     foreach ($input as $param => $value) {
         if (in_array($param, $allowedFields)) {
