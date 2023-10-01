@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Library Navigation</title>
+
+    <style>
+      /* Add some basic CSS for styling the navigation bar */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      nav {
+        background-color: #333;
+        overflow: hidden;
+      }
+      nav a {
+        float: left;
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+      }
+      nav a:hover {
+        background-color: #ddd;
+        color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a href="authors.html" id="authors">Authors</a>
+      <a href="books.html" id="books">Books</a>
+      <a href="borrow.html" id="borrow">Borrow Book</a>
+    </nav>
+
+    <h1>Welcome to the Library</h1>
+    <p>Explore our collection of books and authors.</p>
+
+    <div id="contentContainer"></div>
+  </body>
+
+  <script>
+    function loadContent(section) {
+      const contentContainer = document.getElementById("contentContainer");
+
+      // Use fetch to load the content from the corresponding HTML file
+      fetch(`${section}.html`)
+        .then((response) => response.text())
+        .then((content) => {
+          // Set the content of the container to the loaded HTML
+          contentContainer.innerHTML = content;
+        })
+        .catch((error) => {
+          console.error(`Error loading ${section} content:`, error);
+        });
+    }
+
+    // Add click event listeners for each navigation item
+    const authors = document.getElementById("authors");
+    authors.addEventListener("click", () => loadContent("authors"));
+
+    const books = document.getElementById("books");
+    books.addEventListener("click", () => loadContent("books"));
+
+    const borrow = document.getElementById("borrow");
+    borrow.addEventListener("click", () => loadContent("borrow"));
+  </script>
+</html>

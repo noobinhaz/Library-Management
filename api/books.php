@@ -1,6 +1,8 @@
 <?php
 
+require_once __DIR__ . '/../core/cors_middleware.php';
 $url = $_SERVER['REQUEST_URI'];
+
 
 // Checking if a slash is the first character in the route; otherwise, add it
 if (strpos($url, "/") !== 0) {
@@ -16,6 +18,7 @@ $dbConn = $dbInstance->connect($db);
 
 if ($url == '/books' && $_SERVER['REQUEST_METHOD'] == 'GET') {
     $books = getAllbooks($dbConn);
+    header('Content-Type: application/json');
     echo json_encode([
         'isSuccess' => true,
         'message'   => !empty($books) ? '' : 'No books Available',
@@ -108,7 +111,7 @@ if (
 
 function getAllbooks($db)
 {
-    $statement = "SELECT * FROM books";
+    $statement = "SELECT books.id, books.name, books.version, authors.name AS author_name, books.isbn_code, books.sbn_code, books.shelf_position FROM library_db.books JOIN authors ON authors.id = books.author_id;    ";
     $result = $db->query($statement);
 
     if ($result && $result->num_rows > 0) {
@@ -116,7 +119,12 @@ function getAllbooks($db)
         while ($result_row = $result->fetch_assoc()) {
             $book = [
                 'id' => $result_row['id'],
-                'name' => $result_row['name']
+                'name' => $result_row['name'],
+                'version' => $result_row['version'],
+                'author_name' => $result_row['author_name'],
+                'isbn_code' => $result_row['isbn_code'],
+                'sbn_code' => $result_row['sbn_code'],
+                'shelf_position' => $result_row['shelf_position']
             ];
             $books[] = $book;
         }

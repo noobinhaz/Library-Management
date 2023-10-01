@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/../core/cors_middleware.php';
 $url = $_SERVER['REQUEST_URI'];
 
 // Checking if a slash is the first character in the route; otherwise, add it
@@ -16,6 +17,8 @@ $dbConn = $dbInstance->connect($db);
 
 if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'GET') {
     $authors = getAllAuthors($dbConn);
+    header('Content-Type: application/json');
+
     echo json_encode([
         'isSuccess' => true,
         'message'   => !empty($authors) ? '' : 'No Authors Available',
