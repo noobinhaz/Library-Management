@@ -111,11 +111,11 @@ if (
 
 function getAllbooks($db)
 {
-    $statement = "SELECT books.id, books.name, books.version, authors.name AS author_name, books.isbn_code, books.sbn_code, books.shelf_position FROM library_db.books JOIN authors ON authors.id = books.author_id;    ";
+    $statement = "SELECT books.id, books.name, books.version, authors.name AS author_name, books.isbn_code, books.sbn_code, books.shelf_position FROM library_db.books LEFT JOIN authors ON authors.id = books.author_id;    ";
     $result = $db->query($statement);
 
+    $books = [];
     if ($result && $result->num_rows > 0) {
-        $books = [];
         while ($result_row = $result->fetch_assoc()) {
             $book = [
                 'id' => $result_row['id'],

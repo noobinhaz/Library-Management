@@ -36,7 +36,9 @@
         <a href="authors.html" id="authors">Authors</a>
         <a href="books.html" id="books">Books</a>
         <a href="borrow.html" id="borrow">Borrow Book</a>
+        <a href="addAuthors.html" id="addAuthor">Add Author</a>
       </nav>
+
       <table border="1">
         <thead>
           <tr>
@@ -54,7 +56,7 @@
     </div>
 
     <script>
-      function fetchbooks() {
+      function fetchBooks() {
         fetch("http://localhost:8000/books", { method: "GET" })
           .then((response) => response.json())
           .then((data) => {
@@ -62,16 +64,16 @@
               const booksTableBody = document.getElementById("booksTableBody");
               booksTableBody.innerHTML = ""; // Clear existing data
 
-              data.data.forEach((author) => {
+              data.data.map((book) => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                                    <td>${author.id}</td>
-                                    <td>${author.name}</td>
-                                    <td>${author.version}</td>
-                                    <td>${author.author_name}</td>
-                                    <td>${author.isbn_code}</td>
-                                    <td>${author.sbn_code}</td>
-                                    <td>${author.shelf_position}</td>
+                                    <td>${book.id}</td>
+                                    <td>${book.name}</td>
+                                    <td>${book.version}</td>
+                                    <td>${book.book_name}</td>
+                                    <td>${book.isbn_code}</td>
+                                    <td>${book.sbn_code}</td>
+                                    <td>${book.shelf_position}</td>
                                 `;
                 booksTableBody.appendChild(row);
               });
@@ -83,7 +85,7 @@
             console.error("Fetch error:", error);
           });
       }
-      window.addEventListener("load", fetchbooks);
+      window.addEventListener("load", fetchBooks);
     </script>
   </body>
 </html>
