@@ -49,6 +49,7 @@
             <th>ISBN Code</th>
             <th>SBN Code</th>
             <th>Shelf Position</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody id="booksTableBody"></tbody>
@@ -74,11 +75,26 @@
                                     <td>${book.isbn_code}</td>
                                     <td>${book.sbn_code}</td>
                                     <td>${book.shelf_position}</td>
+                                    <td><button onClick="deleteBook(${book.id})">Delete</button></td>
                                 `;
                 booksTableBody.appendChild(row);
               });
             } else {
               console.error("Error fetching books:", data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("Fetch error:", error);
+          });
+      }
+      function deleteBook(id) {
+        fetch(`http://localhost:8000/books/${id}`, { method: "DELETE" })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.isSuccess) {
+              fetchBooks();
+            } else {
+              console.error("Error deleting books:", data.message);
             }
           })
           .catch((error) => {
