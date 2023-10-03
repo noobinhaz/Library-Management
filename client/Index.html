@@ -15,34 +15,5 @@
 
     <h1>Welcome to the Library</h1>
     <p>Explore our collection of books and authors.</p>
-
-    <div id="contentContainer"></div>
   </body>
-
-  <script>
-    function loadContent(section) {
-      const contentContainer = document.getElementById("contentContainer");
-
-      // Use fetch to load the content from the corresponding HTML file
-      fetch(`${section}.html`)
-        .then((response) => response.text())
-        .then((content) => {
-          // Set the content of the container to the loaded HTML
-          contentContainer.innerHTML = content;
-        })
-        .catch((error) => {
-          console.error(`Error loading ${section} content:`, error);
-        });
-    }
-
-    // Add click event listeners for each navigation item
-    const authors = document.getElementById("authors");
-    authors.addEventListener("click", () => loadContent("authors"));
-
-    const books = document.getElementById("books");
-    books.addEventListener("click", () => loadContent("books"));
-
-    const borrow = document.getElementById("borrow");
-    borrow.addEventListener("click", () => loadContent("borrow"));
-  </script>
 </html>

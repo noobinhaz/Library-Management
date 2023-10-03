@@ -12,7 +12,7 @@
         <a href="authors.html" id="authors">Authors</a>
         <a href="books.html" id="books">Books</a>
         <a href="borrow.html" id="borrow">Borrow Book</a>
-        <a href="addBooks.html" id="addAuthor">Add Books</a>
+        <a href="addBooks.html" class="add">Add Books</a>
       </nav>
 
       <table border="1">
@@ -22,6 +22,7 @@
             <th>Name</th>
             <th>Version</th>
             <th>Author Name</th>
+            <th>Release Date</th>
             <th>ISBN Code</th>
             <th>SBN Code</th>
             <th>Shelf Position</th>
@@ -48,6 +49,7 @@
                                     <td>${book.name}</td>
                                     <td>${book.version}</td>
                                     <td>${book.author_name}</td>
+                                    <td>${book.release_date}</td>
                                     <td>${book.isbn_code}</td>
                                     <td>${book.sbn_code}</td>
                                     <td>${book.shelf_position}</td>

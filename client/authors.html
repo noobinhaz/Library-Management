@@ -12,13 +12,14 @@
         <a href="authors.html" id="authors">Authors</a>
         <a href="books.html" id="books">Books</a>
         <a href="borrow.html" id="borrow">Borrow Book</a>
-        <a href="addAuthors.html">Add Authors</a>
+        <a href="addAuthors.html" class="add">Add Authors</a>
       </nav>
       <table border="1">
         <thead>
           <tr>
             <th>ID</th>
             <th>Name</th>
+            <th>DOB</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -29,10 +30,9 @@
     <script>
       function fetchAuthors() {
         fetch("http://localhost:8000/authors", { method: "GET" })
-          .then((response) => {response.json();console.log(response)})
+          .then((response) => response.json())
           .then((data) => {
-            console.log(data);
-            if (data.isSuccess) {
+            if (data?.isSuccess) {
               const authorsTableBody =
                 document.getElementById("authorsTableBody");
               authorsTableBody.innerHTML = ""; // Clear existing data
@@ -42,6 +42,7 @@
                 row.innerHTML = `
                                     <td>${index + 1}</td>
                                     <td>${author.name}</td>
+                                    <td>${author.dob}</td>
                                     <td><button onclick="deleteAuthor(${
                                       author.id
                                     })">Delete</button></td>
@@ -49,7 +50,7 @@
                 authorsTableBody.appendChild(row);
               });
             } else {
-              console.error("Error fetching authors:", data.message);
+              console.error("Error fetching authors:", data?.message);
             }
           })
           .catch((error) => {

@@ -12,41 +12,51 @@
         <a href="authors.html" id="authors">Authors</a>
         <a href="books.html" id="books">Books</a>
         <a href="borrow.html" id="borrow">Borrow Book</a>
-        <a href="addAuthors.html">Add Authors</a>
+        <a href="addBorrow.html" class="add">Add Borrows</a>
       </nav>
       <table border="1">
         <thead>
           <tr>
             <th>ID</th>
-            <th>Name</th>
+            <th>Student Mail</th>
+            <th>Book Name</th>
+            <th>Borrow Date</th>
+            <th>Return Date</th>
             <th>Action</th>
           </tr>
         </thead>
-        <tbody id="authorsTableBody"></tbody>
+        <tbody id="borrowTableBody"></tbody>
       </table>
     </div>
 
     <script>
       function fetchAuthors() {
-        fetch("http://localhost:8000/authors", { method: "GET" })
+        fetch("http://localhost:8000/borrows", { method: "GET" })
           .then((response) => response.json())
           .then((data) => {
             console.log(data);
             if (data.isSuccess) {
-              const authorsTableBody =
-                document.getElementById("authorsTableBody");
-              authorsTableBody.innerHTML = ""; // Clear existing data
+              const borrowTableBody =
+                document.getElementById("borrowTableBody");
+              borrowTableBody.innerHTML = ""; // Clear existing data
 
-              data.data.map((author, index) => {
+              data.data.map((borrow, index) => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
                                     <td>${index + 1}</td>
-                                    <td>${author.name}</td>
-                                    <td><button onclick="deleteAuthor(${
-                                      author.id
-                                    })">Delete</button></td>
+                                    <td>${borrow.email}</td>
+                                    <td>${borrow.book_name}</td>
+                                    <td>${borrow.borrow_date}</td>
+                                    <td>${
+                                      borrow.return_date
+                                        ? borrow.return_date
+                                        : "--"
+                                    }</td>
+                                    <td><button onclick="updateBorrow(${
+                                      borrow.id
+                                    })">Edit</button></td>
                                 `;
-                authorsTableBody.appendChild(row);
+                borrowTableBody.appendChild(row);
               });
             } else {
               console.error("Error fetching authors:", data.message);
@@ -56,19 +66,8 @@
             console.error("Fetch error:", error);
           });
       }
-      function deleteAuthor(id) {
-        fetch("http://localhost:8000/borrows/" + id, { method: "DELETE" })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.isSuccess) {
-              fetchAuthors();
-            } else {
-              console.error("Error Deleting authors:", data.message);
-            }
-          })
-          .catch((error) => {
-            console.error("Fetch error:", error);
-          });
+      function updateBorrow(id) {
+        window.location.replace("/client/editBorrow.html?id=" + id);
       }
       window.addEventListener("load", fetchAuthors);
     </script>

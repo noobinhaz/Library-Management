@@ -12,10 +12,51 @@
         <a href="authors.html" id="authors">Authors</a>
         <a href="books.html" id="books">Books</a>
         <a href="borrow.html" id="borrow">Borrow Book</a>
+        <a href="addBooks.html" class="add">Add Books</a>
       </nav>
-      <div id="addAuthor"></div>
+      <div id="addAuthor">
+        <h1>Add Author</h1>
+        <form id="authorForm">
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name" required />
+          <br />
+          <label for="dob">Date of Birth:</label>
+          <input type="date" id="dob" name="dob" required />
+          <br />
+          <input type="submit" value="Add Author" />
+          <button onclick="history.back()" type="button">Back</button>
+        </form>
+      </div>
     </div>
 
-    <script></script>
+    <script>
+      document
+        .getElementById("authorForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault(); // Prevent the default form submission
+
+          // Get form data
+          const formData = new FormData(this);
+
+          // Send a POST request to the server with the form data
+          fetch("http://localhost:8000/authors", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.isSuccess) {
+                alert("Author added successfully.");
+                // Redirect or perform any other action as needed
+              } else {
+                alert("Error adding author: " + data.message);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("An error occurred while adding the author.");
+            });
+        });
+    </script>
   </body>
 </html>

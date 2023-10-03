@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Borrow Entry</title>
+    <link rel="stylesheet" href="styles/style.css" />
+  </head>
+  <body>
+    <div>
+      <nav>
+        <a href="authors.html" id="authors">Authors</a>
+        <a href="books.html" id="books">Books</a>
+        <a href="borrow.html" id="borrow">Borrow Book</a>
+        <a href="addBorrow.html" class="add">Add Borrows</a>
+      </nav>
+      <h1>Add Borrow Entry</h1>
+      <form id="addBorrowForm">
+        <label for="user">User Email:</label>
+        <input type="email" id="user" name="user" required />
+
+        <label for="book_id">Book:</label>
+        <select id="book_id" name="book_id" required>
+          <!-- Populate this dropdown with book options from the server -->
+        </select>
+
+        <label for="borrow_date">Borrow Date:</label>
+        <input type="date" id="borrow_date" name="borrow_date" required />
+
+        <label for="return_date">Return Date:</label>
+        <input type="date" id="return_date" name="return_date" />
+
+        <input type="submit" value="Add Borrow" />
+        <button onclick="history.back()" type="button">Back</button>
+      </form>
+    </div>
+
+    <script>
+      function fetchBooks() {
+        const bookDropdown = document.getElementById("book_id");
+
+        // Make a GET request to fetch book options
+        fetch("http://localhost:8000/books", { method: "GET" })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.isSuccess) {
+              // Clear existing options
+              bookDropdown.innerHTML = "";
+
+              // Populate the dropdown with book options
+              data.data.forEach((book) => {
+                const option = document.createElement("option");
+                option.value = book.id;
+                option.textContent = book.name;
+                bookDropdown.appendChild(option);
+              });
+            } else {
+              console.error("Error fetching books:", data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("Fetch error:", error);
+          });
+      }
+
+      // Function to handle form submission
+      function addBorrow(event) {
+        event.preventDefault();
+
+        const user = document.getElementById("user").value;
+        const book_id = document.getElementById("book_id").value;
+        const borrow_date = document.getElementById("borrow_date").value;
+        const return_date = document.getElementById("return_date").value;
+
+        const formData = new FormData();
+        formData.append("user", user);
+        formData.append("book_id", book_id);
+        formData.append("borrow_date", borrow_date);
+        formData.append("return_date", return_date);
+
+        // Make a POST request to add a borrow entry
+        fetch("http://localhost:8000/borrows", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.isSuccess) {
+              // Redirect to the borrow.html page after successful submission
+              window.location.href = "borrow.html";
+            } else {
+              console.error("Error adding borrow entry:", data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("Fetch error:", error);
+          });
+      }
+
+      // Add event listeners
+      window.addEventListener("load", fetchBooks);
+      document
+        .getElementById("addBorrowForm")
+        .addEventListener("submit", addBorrow);
+    </script>
+  </body>
+</html>

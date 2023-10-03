@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Borrow Entry</title>
+    <link rel="stylesheet" href="styles/style.css" />
+  </head>
+  <body>
+    <nav>
+      <a href="authors.html" id="authors">Authors</a>
+      <a href="books.html" id="books">Books</a>
+      <a href="borrow.html" id="borrow">Borrow Book</a>
+      <a href="addBorrow.html" class="add">Add Borrows</a>
+    </nav>
+    <h1>Edit Borrow Entry</h1>
+    <form id="editBorrowForm">
+      <input type="hidden" id="borrowId" name="id" />
+      <label for="user">User (Email):</label>
+      <input type="email" id="user" name="user" required />
+      <br />
+
+      <label for="book_id">Book:</label>
+      <select id="book_id" name="book_id" required>
+        <!-- Options will be populated by JavaScript -->
+      </select>
+      <br />
+
+      <label for="borrow_date">Borrow Date:</label>
+      <input type="date" id="borrow_date" name="borrow_date" required />
+      <br />
+
+      <label for="return_date">Return Date:</label>
+      <input type="date" id="return_date" name="return_date" />
+      <br />
+
+      <button type="submit">Update</button>
+    </form>
+
+    <script>
+      // Function to fetch borrow details and populate the form
+      function fetchBorrowDetails() {
+        const borrowId = new URLSearchParams(window.location.search).get("id");
+        const borrowForm = document.getElementById("editBorrowForm");
+
+        // Make a GET request to fetch borrow details
+        fetch(`http://localhost:8000/borrows/${borrowId}`, { method: "GET" })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            if (data.isSuccess) {
+              // Populate the form fields with borrow details
+              const borrow = data.data;
+              document.getElementById("borrowId").value = borrow.id;
+              document.getElementById("user").value = borrow.user;
+              document.getElementById("borrow_date").value = borrow.borrow_date;
+              document.getElementById("return_date").value = borrow.return_date;
+              // Manually trigger the book selection dropdown to populate options
+              fetchBooks(borrow.book_id);
+            } else {
+              console.error("Error fetching borrow details:", data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("Fetch error:", error);
+          });
+      }
+
+      // Function to fetch book options and populate the dropdown
+      function fetchBooks(selectedBookId) {
+        const bookDropdown = document.getElementById("book_id");
+
+        fetch("http://localhost:8000/books", { method: "GET" })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.isSuccess) {
+              // Clear existing options
+              bookDropdown.innerHTML = "";
+
+              // Populate the dropdown with book options
+              data.data.forEach((book) => {
+                const option = document.createElement("option");
+                option.value = book.id;
+                option.textContent = book.name;
+
+                // Set the selected option if it matches the book_id from borrow details
+                if (book.id == selectedBookId) {
+                  option.selected = true;
+                }
+
+                bookDropdown.appendChild(option);
+              });
+            } else {
+              console.error("Error fetching books:", data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("Fetch error:", error);
+          });
+      }
+
+      // Function to handle form submission
+      function updateBorrow(event) {
+        event.preventDefault();
+
+        const borrowId = document.getElementById("borrowId").value;
+        const user = document.getElementById("user").value;
+        const book_id = document.getElementById("book_id").value;
+        const borrow_date = document.getElementById("borrow_date").value;
+        const return_date = document.getElementById("return_date").value;
+
+        const formData = new FormData();
+        formData.append("user", user);
+        formData.append("book_id", book_id);
+        formData.append("borrow_date", borrow_date);
+        formData.append("return_date", return_date);
+
+        fetch(`http://localhost:8000/borrows/${borrowId}`, {
+          method: "PATCH",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.isSuccess) {
+              // Redirect to the borrow.html page after successful update
+              window.location.href = "borrow.html";
+            } else {
+              console.error("Error updating borrow entry:", data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("Fetch error:", error);
+          });
+      }
+
+      // Add event listeners
+      window.addEventListener("load", fetchBorrowDetails);
+      document
+        .getElementById("editBorrowForm")
+        .addEventListener("submit", updateBorrow);
+    </script>
+  </body>
+</html>

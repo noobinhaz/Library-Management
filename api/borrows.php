@@ -30,21 +30,22 @@ if ($url == '/borrows' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     $input = $_POST;
     try {
         //code...
-        $bookId = addbook($input, $dbConn);
-        if ($bookId !== null) {
-            $input['id'] = $bookId;
-            $input['link'] = "/borrows/$bookId";
+        $borrowId = addBorrow($input, $dbConn);
+        if ($borrowId !== null) {
+            $input['id'] = $borrowId;
+            $input['link'] = "/borrows/$borrowId";
             http_response_code(201);
         } else {
             http_response_code(500);
         }
 
         echo json_encode([
-            'isSuccess' => $bookId !== null,
-            'message'   => $bookId !== null ? '' : 'Could not add book',
+            'isSuccess' => $borrowId !== null,
+            'message'   => $borrowId !== null ? '' : 'Could not add borrow',
             'data'      => $input
         ]);
     } catch (\Throwable $th) {
+        http_response_code(422);
         echo json_encode([
             'isSuccess' => false,
             'message'   => $th->getMessage(),
@@ -57,13 +58,24 @@ if (
     preg_match("/borrows\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'GET'
 ) {
-    $bookId = $matches[1];
-    $book = getbook($dbConn, $bookId);
-    echo json_encode([
-        'isSuccess' => !empty($book) ? true : false,
-        'message'   => !empty($book) ? '' : 'Could not find book',
-        'data'      => $book
-    ]);
+    $borrowId = $matches[1];
+    $borrow = getBorrow($dbConn, $borrowId);
+    
+    if ($borrow !== null) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'isSuccess' => true,
+            'message'   => '',
+            'data'      => $borrow
+        ]);
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'isSuccess' => false,
+            'message'   => 'Could not find borrow',
+            'data'      => null
+        ]);
+    }
 }
 
 if (
@@ -82,15 +94,15 @@ if (
         return;
     }
 
-    $bookId = $matches[1];
-    $update = updatebook($input, $dbConn, $bookId);
-    $book = getbook($dbConn, $bookId);
+    $borrowId = $matches[1];
+    $update = updateborrow($input, $dbConn, $borrowId);
+    $borrow = getBorrow($dbConn, $borrowId);
 
-    if ($book == null) {
+    if ($borrow == null) {
         http_response_code(404); // Not Found
         echo json_encode([
             'isSuccess' => false,
-            'message'   => 'No book Found',
+            'message'   => 'No borrow Found',
             'data'      => []
         ]);
         return;
@@ -99,66 +111,58 @@ if (
     echo json_encode([
         'isSuccess' => $update ? true : false,
         'message'   => $update ? '' : 'Could not update',
-        'data'      => $book
-    ]);
-}
-
-if (
-    preg_match("/borrows\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
-    == 'DELETE'
-) {
-    $bookId = $matches[1];
-    $deleteStatus = deletebook($dbConn, $bookId);
-    echo json_encode([
-        'isSuccess' => $deleteStatus,
-        'message'   => 'Deleted ' . ($deleteStatus ? 'Success' : 'Failed'),
-        'data'      => ['id' => $bookId]
+        'data'      => $borrow
     ]);
 }
 
 
 function getAllborrows($db)
 {
-    $statement = "SELECT book_borrows.id, users.email, books.name as book_name, book_borrows.borrow_date, book_borrows.return_date, 
+    $statement = "SELECT book_borrows.id, users.email, books.name as book_name, book_borrows.borrow_date, book_borrows.return_date 
     FROM library_db.book_borrows LEFT JOIN books ON books.id = book_borrows.book_id LEFT JOIN users ON users.id = book_borrows.user_id;";
     $result = $db->query($statement);
 
     $borrows = [];
     if ($result && $result->num_rows > 0) {
         while ($result_row = $result->fetch_assoc()) {
-            $book = [
+            $borrow = [
                 'id' => $result_row['id'],
-                'name' => $result_row['name'],
-                'version' => $result_row['version'],
-                'author_name' => $result_row['author_name'],
-                'isbn_code' => $result_row['isbn_code'],
-                'sbn_code' => $result_row['sbn_code'],
-                'shelf_position' => $result_row['shelf_position']
+                'email' => $result_row['email'],
+                'book_name' => $result_row['book_name'],
+                'borrow_date' => $result_row['borrow_date'],
+                'return_date' => $result_row['return_date']
             ];
-            $borrows[] = $book;
+            $borrows[] = $borrow;
         }
     }
     return $borrows;
 }
 
-function addbook($input, $db)
+function addBorrow($input, $db)
 {
     try {
         //code...
-        $name = $input['name'];
-        $version = $input['version'];
-        $author_id = $input['author_id'];
-        $isbn_code = $input['isbn_code'];
-        $sbn_code = $input['sbn_code'];
-        $release_date = date('Y-m-d', strtotime($input['release_date']));
-        $shelf_position = $input['shelf_position'];
+        $user = $input['user'];
+        $statement = "SELECT id FROM users where email = '$user'";
+        $result = $db->query($statement);
+        $result_row = $result->fetch_assoc();
+        if(!$result_row){
+            throw new Exception('User not found!');
+        }
+        $user = $result_row['id'];
 
-        $statement = "INSERT INTO borrows (name, version, author_id, isbn_code, sbn_code, release_date, shelf_position)
-                    VALUES ('$name', '$version', $author_id, '$isbn_code', '$sbn_code', '$release_date', '$shelf_position')";
+        $book_id = $input['book_id'];
+        $borrow_date = date('Y-m-d', strtotime($input['borrow_date']));
+        $return_date = null;
+        if(!empty($input['return_date'])){
+
+            $return_date = date('Y-m-d', strtotime($input['return_date']));
+        }
+
+        $statement = "INSERT INTO book_borrows (user_id, book_id, borrow_date, return_date)
+                    VALUES ('$user', '$book_id', $borrow_date, '$return_date')";
 
         $create = $db->query($statement);
-
-
 
         if ($create) {
 
@@ -172,36 +176,54 @@ function addbook($input, $db)
     }
 }
 
-function getbook($db, $id)
+function getBorrow($db, $id)
 {
-    $statement = "SELECT * FROM borrows where id = " . $id;
+    $statement = "SELECT book_borrows.*, users.email as user  
+                  FROM book_borrows 
+                  LEFT JOIN users ON users.id = book_borrows.user_id 
+                  WHERE book_borrows.id = $id";
+    
     $result = $db->query($statement);
-    $result_row = $result->fetch_assoc();
-    return $result_row;
+    
+    if ($result && $result->num_rows > 0) {
+        $result_row = $result->fetch_assoc();
+        $borrow = [
+            'id' => $result_row['id'],
+            'user' => $result_row['user'],
+            'book_id' => $result_row['book_id'],
+            'borrow_date' => $result_row['borrow_date'],
+            'return_date' => $result_row['return_date']
+        ];
+        return $borrow;
+    } else {
+        return null;
+    }
 }
 
-function updatebook($input, $db, $bookId)
+
+function updateborrow($input, $db, $borrowId)
 {
     $fields = getParams($input);
-    $statement = "UPDATE borrows SET $fields WHERE id = " . $bookId;
+    $statement = "UPDATE book_borrows SET $fields WHERE id = " . $borrowId;
     $update = $db->query($statement);
     return $update;
 }
 
 function getParams($input)
 {
-    $allowedFields = ['book'];
+    $allowedFields = ['book_id', 'borrow_date', 'return_date'];
     $filterParams = [];
     foreach ($input as $param => $value) {
         if (in_array($param, $allowedFields)) {
+            if($param == 'borrow_date'){
+                $value = date('Y-m-d', strtotime($input['borrow_date']));
+            }
+            if($param == 'return_date'){
+                $value = date('Y-m-d', strtotime($input['return_date']));
+            }
             $filterParams[] = "$param='$value'";
         }
     }
     return implode(", ", $filterParams);
 }
 
-function deletebook($db, $id)
-{
-    $statement = "DELETE FROM borrows where id = " . $id;
-    return $db->query($statement);
-}

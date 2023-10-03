@@ -27,22 +27,33 @@ if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'GET') {
 }
 
 if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'POST') {
-    $input = $_POST;
-    $authorId = addAuthor($input, $dbConn);
-
-    if ($authorId !== null) {
-        $input['id'] = $authorId;
-        $input['link'] = "/authors/$authorId";
-        http_response_code(201);
-    } else {
-        http_response_code(500);
+    try {
+        //code...
+        $input = $_POST;
+        $authorId = addAuthor($input, $dbConn);
+    
+        if ($authorId !== null) {
+            $input['id'] = $authorId;
+            $input['link'] = "/authors/$authorId";
+            http_response_code(201);
+        } else {
+            http_response_code(500);
+        }
+    
+        echo json_encode([
+            'isSuccess' => $authorId !== null,
+            'message'   => $authorId !== null ? '' : 'Could not add author',
+            'data'      => $input
+        ]);
+    } catch (\Throwable $th) {
+        //throw $th;
+        http_response_code(422);
+        echo json_encode([
+            'isSuccess' => false,
+            'message'   => $th->getMessage(),
+            'data'      => []
+        ]);
     }
-
-    echo json_encode([
-        'isSuccess' => $authorId !== null,
-        'message'   => $authorId !== null ? '' : 'Could not add author',
-        'data'      => $input
-    ]);
 }
 
 if (
@@ -119,7 +130,8 @@ function getAllAuthors($db)
         while ($result_row = $result->fetch_assoc()) {
             $author = [
                 'id' => $result_row['id'],
-                'name' => $result_row['name']
+                'name' => $result_row['name'],
+                'dob'   => $result_row['dob']
             ];
             $authors[] = $author;
         }
@@ -130,9 +142,10 @@ function getAllAuthors($db)
 function addAuthor($input, $db)
 {
     $name = $input['name'];
+    $dob = $input['dob'];
 
-    $statement = "INSERT INTO authors (name)
-VALUES ('$name')";
+    $statement = "INSERT INTO authors (name, dob)
+VALUES ('$name', '$dob')";
 
     $create = $db->query($statement);
     if ($create) {
@@ -150,7 +163,7 @@ function getauthor($db, $id)
     return $result_row;
 }
 
-function updateauthor($input, $db, $authorId)
+function updateAuthor($input, $db, $authorId)
 {
     $fields = getParams($input);
     $statement = "UPDATE authors SET $fields WHERE id = " . $authorId;
@@ -160,7 +173,7 @@ function updateauthor($input, $db, $authorId)
 
 function getParams($input)
 {
-    $allowedFields = ['name'];
+    $allowedFields = ['name', 'dob'];
     $filterParams = [];
     foreach ($input as $param => $value) {
         if (in_array($param, $allowedFields)) {

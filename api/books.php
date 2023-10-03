@@ -119,7 +119,7 @@ if (
 
 function getAllbooks($db)
 {
-    $statement = "SELECT books.id, books.name, books.version, authors.name AS author_name, books.isbn_code, books.sbn_code, books.shelf_position FROM library_db.books LEFT JOIN authors ON authors.id = books.author_id;    ";
+    $statement = "SELECT books.id, books.name, books.version, books.release_date, authors.name AS author_name, books.isbn_code, books.sbn_code, books.shelf_position FROM library_db.books LEFT JOIN authors ON authors.id = books.author_id;    ";
     $result = $db->query($statement);
 
     $books = [];
@@ -130,6 +130,7 @@ function getAllbooks($db)
                 'name' => $result_row['name'],
                 'version' => $result_row['version'],
                 'author_name' => $result_row['author_name'],
+                'release_date' => $result_row['release_date'],
                 'isbn_code' => $result_row['isbn_code'],
                 'sbn_code' => $result_row['sbn_code'],
                 'shelf_position' => $result_row['shelf_position']
@@ -189,7 +190,7 @@ function updatebook($input, $db, $bookId)
 
 function getParams($input)
 {
-    $allowedFields = ['book'];
+    $allowedFields = ['name', 'version','author_id','isbn_code','sbn_code', 'release_date', 'shelf_position'];
     $filterParams = [];
     foreach ($input as $param => $value) {
         if (in_array($param, $allowedFields)) {

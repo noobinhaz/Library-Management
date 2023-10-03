@@ -31,8 +31,8 @@ CREATE TABLE IF NOT EXISTS book_borrows (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
     book_id INT,
-    borrow_date DATE,
-    return_date DATE
+    borrow_date DATE DEFAULT NOW(),
+    return_date DATE DEFAULT NULL
 );
 
 INSERT INTO authors (name, dob) VALUES
