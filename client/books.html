@@ -41,17 +41,19 @@
               const booksTableBody = document.getElementById("booksTableBody");
               booksTableBody.innerHTML = ""; // Clear existing data
 
-              data.data.map((book) => {
+              data.data.map((book, index) => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                                    <td>${book.id}</td>
+                                    <td>${index + 1}</td>
                                     <td>${book.name}</td>
                                     <td>${book.version}</td>
                                     <td>${book.author_name}</td>
                                     <td>${book.isbn_code}</td>
                                     <td>${book.sbn_code}</td>
                                     <td>${book.shelf_position}</td>
-                                    <td><button onClick="deleteBook(${book.id})">Delete</button></td>
+                                    <td><button onClick="deleteBook(${
+                                      book.id
+                                    })">Delete</button></td>
                                 `;
                 booksTableBody.appendChild(row);
               });
