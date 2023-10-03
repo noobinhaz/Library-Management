@@ -14,26 +14,26 @@ global $db;
 $dbInstance = new DB();
 $dbConn = $dbInstance->connect($db);
 
-// books CRUD Operations
+// borrows CRUD Operations
 
-if ($url == '/books' && $_SERVER['REQUEST_METHOD'] == 'GET') {
-    $books = getAllbooks($dbConn);
+if ($url == '/borrows' && $_SERVER['REQUEST_METHOD'] == 'GET') {
+    $borrows = getAllborrows($dbConn);
     header('Content-Type: application/json');
     echo json_encode([
         'isSuccess' => true,
-        'message'   => !empty($books) ? '' : 'No books Available',
-        'data'      => $books
+        'message'   => !empty($borrows) ? '' : 'No borrows Available',
+        'data'      => $borrows
     ]);
 }
 
-if ($url == '/books' && $_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($url == '/borrows' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     $input = $_POST;
     try {
         //code...
         $bookId = addbook($input, $dbConn);
         if ($bookId !== null) {
             $input['id'] = $bookId;
-            $input['link'] = "/books/$bookId";
+            $input['link'] = "/borrows/$bookId";
             http_response_code(201);
         } else {
             http_response_code(500);
@@ -54,7 +54,7 @@ if ($url == '/books' && $_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 if (
-    preg_match("/books\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
+    preg_match("/borrows\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'GET'
 ) {
     $bookId = $matches[1];
@@ -67,7 +67,7 @@ if (
 }
 
 if (
-    preg_match("/books\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
+    preg_match("/borrows\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'PATCH'
 ) {
     $input = json_decode(file_get_contents("php://input"), true);
@@ -104,7 +104,7 @@ if (
 }
 
 if (
-    preg_match("/books\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
+    preg_match("/borrows\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'DELETE'
 ) {
     $bookId = $matches[1];
@@ -117,12 +117,13 @@ if (
 }
 
 
-function getAllbooks($db)
+function getAllborrows($db)
 {
-    $statement = "SELECT books.id, books.name, books.version, authors.name AS author_name, books.isbn_code, books.sbn_code, books.shelf_position FROM library_db.books LEFT JOIN authors ON authors.id = books.author_id;    ";
+    $statement = "SELECT book_borrows.id, users.email, books.name as book_name, book_borrows.borrow_date, book_borrows.return_date, 
+    FROM library_db.book_borrows LEFT JOIN books ON books.id = book_borrows.book_id LEFT JOIN users ON users.id = book_borrows.user_id;";
     $result = $db->query($statement);
 
-    $books = [];
+    $borrows = [];
     if ($result && $result->num_rows > 0) {
         while ($result_row = $result->fetch_assoc()) {
             $book = [
@@ -134,10 +135,10 @@ function getAllbooks($db)
                 'sbn_code' => $result_row['sbn_code'],
                 'shelf_position' => $result_row['shelf_position']
             ];
-            $books[] = $book;
+            $borrows[] = $book;
         }
     }
-    return $books;
+    return $borrows;
 }
 
 function addbook($input, $db)
@@ -152,7 +153,7 @@ function addbook($input, $db)
         $release_date = date('Y-m-d', strtotime($input['release_date']));
         $shelf_position = $input['shelf_position'];
 
-        $statement = "INSERT INTO books (name, version, author_id, isbn_code, sbn_code, release_date, shelf_position)
+        $statement = "INSERT INTO borrows (name, version, author_id, isbn_code, sbn_code, release_date, shelf_position)
                     VALUES ('$name', '$version', $author_id, '$isbn_code', '$sbn_code', '$release_date', '$shelf_position')";
 
         $create = $db->query($statement);
@@ -173,7 +174,7 @@ function addbook($input, $db)
 
 function getbook($db, $id)
 {
-    $statement = "SELECT * FROM books where id = " . $id;
+    $statement = "SELECT * FROM borrows where id = " . $id;
     $result = $db->query($statement);
     $result_row = $result->fetch_assoc();
     return $result_row;
@@ -182,7 +183,7 @@ function getbook($db, $id)
 function updatebook($input, $db, $bookId)
 {
     $fields = getParams($input);
-    $statement = "UPDATE books SET $fields WHERE id = " . $bookId;
+    $statement = "UPDATE borrows SET $fields WHERE id = " . $bookId;
     $update = $db->query($statement);
     return $update;
 }
@@ -201,6 +202,6 @@ function getParams($input)
 
 function deletebook($db, $id)
 {
-    $statement = "DELETE FROM books where id = " . $id;
+    $statement = "DELETE FROM borrows where id = " . $id;
     return $db->query($statement);
 }
