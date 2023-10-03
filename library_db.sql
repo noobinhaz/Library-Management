@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS books (
     name VARCHAR(255) NOT NULL,
     version VARCHAR(50),
     author_id INT,
-    isbn_code VARCHAR(13) NOT NULL,
-    sbn_code VARCHAR(13) NOT NULL,
+    isbn_code VARCHAR(190) NOT NULL,
+    sbn_code VARCHAR(190) NOT NULL,
     release_date DATE,
     shelf_position VARCHAR(20)
 );

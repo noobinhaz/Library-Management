@@ -28,21 +28,29 @@ if ($url == '/books' && $_SERVER['REQUEST_METHOD'] == 'GET') {
 
 if ($url == '/books' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     $input = $_POST;
-    $bookId = addbook($input, $dbConn);
+    try {
+        //code...
+        $bookId = addbook($input, $dbConn);
+        if ($bookId !== null) {
+            $input['id'] = $bookId;
+            $input['link'] = "/books/$bookId";
+            http_response_code(201);
+        } else {
+            http_response_code(500);
+        }
 
-    if ($bookId !== null) {
-        $input['id'] = $bookId;
-        $input['link'] = "/books/$bookId";
-        http_response_code(201);
-    } else {
-        http_response_code(500);
+        echo json_encode([
+            'isSuccess' => $bookId !== null,
+            'message'   => $bookId !== null ? '' : 'Could not add book',
+            'data'      => $input
+        ]);
+    } catch (\Throwable $th) {
+        echo json_encode([
+            'isSuccess' => false,
+            'message'   => $th->getMessage(),
+            'data'      => []
+        ]);
     }
-
-    echo json_encode([
-        'isSuccess' => $bookId !== null,
-        'message'   => $bookId !== null ? '' : 'Could not add book',
-        'data'      => $input
-    ]);
 }
 
 if (
@@ -134,17 +142,33 @@ function getAllbooks($db)
 
 function addbook($input, $db)
 {
-    $name = $input['name'];
+    try {
+        //code...
+        $name = $input['name'];
+        $version = $input['version'];
+        $author_id = $input['author_id'];
+        $isbn_code = $input['isbn_code'];
+        $sbn_code = $input['sbn_code'];
+        $release_date = date('Y-m-d', strtotime($input['release_date']));
+        $shelf_position = $input['shelf_position'];
 
-    $statement = "INSERT INTO books (name)
-VALUES ('$name')";
+        $statement = "INSERT INTO books (name, version, author_id, isbn_code, sbn_code, release_date, shelf_position)
+                    VALUES ('$name', '$version', $author_id, '$isbn_code', '$sbn_code', '$release_date', '$shelf_position')";
 
-    $create = $db->query($statement);
-    if ($create) {
+        $create = $db->query($statement);
 
-        return $db->insert_id;
+
+
+        if ($create) {
+
+            return $db->insert_id;
+        } else {
+            throw new Exception($db->error);
+            return null;
+        }
+    } catch (\Throwable $th) {
+        throw $th;
     }
-    return null;
 }
 
 function getbook($db, $id)
