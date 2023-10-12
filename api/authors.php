@@ -31,7 +31,7 @@ if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         //code...
         $input = $_POST;
         $authorId = addAuthor($input, $dbConn);
-    
+
         if ($authorId !== null) {
             $input['id'] = $authorId;
             $input['link'] = "/authors/$authorId";
@@ -39,7 +39,7 @@ if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             http_response_code(500);
         }
-    
+
         echo json_encode([
             'isSuccess' => $authorId !== null,
             'message'   => $authorId !== null ? '' : 'Could not add author',
@@ -56,17 +56,35 @@ if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+if (preg_match("/authors\/(\d+)\/books/", $url, $matches) && $_SERVER['REQUEST_METHOD'] == 'GET') {
+    header('Content-Type: application/json');
+    $authorId = $matches[1];
+
+    $books = getAuthorBooks($dbConn, $authorId);
+
+    echo json_encode([
+        'isSuccess' => $books && count($books) ? true : false,
+        'message'   => $books && count($books) ? '' : "No books found",
+        'data'      => $books
+    ]);
+
+    return $books;
+}
+
 if (
     preg_match("/authors\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'GET'
 ) {
     $authorId = $matches[1];
     $author = getAuthor($dbConn, $authorId);
+    header('Content-Type: application/json');
     echo json_encode([
         'isSuccess' => !empty($author) ? true : false,
         'message'   => !empty($author) ? '' : 'Could not find author',
         'data'      => $author
     ]);
+
+    return $author;
 }
 
 if (
@@ -74,7 +92,7 @@ if (
     == 'PATCH'
 ) {
     $input = json_decode(file_get_contents("php://input"), true);
-
+    header('Content-Type: application/json');
     if ($input === null) {
         http_response_code(400); // Bad Request
         echo json_encode([
@@ -187,4 +205,32 @@ function deleteauthor($db, $id)
 {
     $statement = "DELETE FROM authors where id = " . $id;
     return $db->query($statement);
+}
+
+function getAuthorBooks($dbConn, $id)
+{
+    $statement = "SELECT * FROM books WHERE author_id = " . $id;
+
+    $result = $dbConn->query($statement);
+
+    if ($result && $result->num_rows > 0) {
+        $books = [];
+        while ($result_row = $result->fetch_assoc()) {
+            $book = [
+                'id' => $result_row['id'],
+                'name' => $result_row['name'],
+                'version' => $result_row['version'],
+                'release_date' => $result_row['release_date'],
+                'isbn_code' => $result_row['isbn_code'],
+                'sbn_code' => $result_row['sbn_code'],
+                'release_date' => $result_row['release_date'],
+                'shelf_position' => $result_row['shelf_position']
+            ];
+            $books[] = $book;
+        }
+
+        return $books;
+    }
+
+    return null;
 }
