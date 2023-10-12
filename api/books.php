@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../core/cors_middleware.php';
 $url = $_SERVER['REQUEST_URI'];
-
+header('Content-Type: application/json');
 
 // Checking if a slash is the first character in the route; otherwise, add it
 if (strpos($url, "/") !== 0) {
@@ -18,7 +18,7 @@ $dbConn = $dbInstance->connect($db);
 
 if ($url == '/books' && $_SERVER['REQUEST_METHOD'] == 'GET') {
     $books = getAllbooks($dbConn);
-    header('Content-Type: application/json');
+
     echo json_encode([
         'isSuccess' => true,
         'message'   => !empty($books) ? '' : 'No books Available',
@@ -190,7 +190,7 @@ function updatebook($input, $db, $bookId)
 
 function getParams($input)
 {
-    $allowedFields = ['name', 'version','author_id','isbn_code','sbn_code', 'release_date', 'shelf_position'];
+    $allowedFields = ['name', 'version', 'author_id', 'isbn_code', 'sbn_code', 'release_date', 'shelf_position'];
     $filterParams = [];
     foreach ($input as $param => $value) {
         if (in_array($param, $allowedFields)) {

@@ -13,11 +13,13 @@ global $db;
 $dbInstance = new DB();
 $dbConn = $dbInstance->connect($db);
 
+header('Content-Type: application/json');
+
 // Authors CRUD Operations
 
 if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'GET') {
     $authors = getAllAuthors($dbConn);
-    header('Content-Type: application/json');
+
 
     echo json_encode([
         'isSuccess' => true,
@@ -57,7 +59,7 @@ if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 if (preg_match("/authors\/(\d+)\/books/", $url, $matches) && $_SERVER['REQUEST_METHOD'] == 'GET') {
-    header('Content-Type: application/json');
+
     $authorId = $matches[1];
 
     $books = getAuthorBooks($dbConn, $authorId);
@@ -77,7 +79,7 @@ if (
 ) {
     $authorId = $matches[1];
     $author = getAuthor($dbConn, $authorId);
-    header('Content-Type: application/json');
+
     echo json_encode([
         'isSuccess' => !empty($author) ? true : false,
         'message'   => !empty($author) ? '' : 'Could not find author',
@@ -92,7 +94,7 @@ if (
     == 'PATCH'
 ) {
     $input = json_decode(file_get_contents("php://input"), true);
-    header('Content-Type: application/json');
+
     if ($input === null) {
         http_response_code(400); // Bad Request
         echo json_encode([
