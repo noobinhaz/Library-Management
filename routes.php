@@ -7,6 +7,8 @@ $routes = [
     '/'         => 'index.php',
 ];
 
+header('Content-Type: application/json');
+
 $request_uri = $_SERVER['REQUEST_URI'];
 $route = explode('/', parse_url($request_uri, PHP_URL_PATH))[1];
 
