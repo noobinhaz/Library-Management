@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../core/cors_middleware.php';
 $url = $_SERVER['REQUEST_URI'];
-
+header('Content-Type: application/json');
 
 // Checking if a slash is the first character in the route; otherwise, add it
 if (strpos($url, "/") !== 0) {
@@ -18,7 +18,7 @@ $dbConn = $dbInstance->connect($db);
 
 if ($url == '/borrows' && $_SERVER['REQUEST_METHOD'] == 'GET') {
     $borrows = getAllborrows($dbConn);
-    header('Content-Type: application/json');
+    
     echo json_encode([
         'isSuccess' => true,
         'message'   => !empty($borrows) ? '' : 'No borrows Available',
@@ -62,14 +62,14 @@ if (
     $borrow = getBorrow($dbConn, $borrowId);
     
     if ($borrow !== null) {
-        header('Content-Type: application/json');
+        
         echo json_encode([
             'isSuccess' => true,
             'message'   => '',
             'data'      => $borrow
         ]);
     } else {
-        header('Content-Type: application/json');
+        
         echo json_encode([
             'isSuccess' => false,
             'message'   => 'Could not find borrow',
@@ -149,7 +149,7 @@ function addBorrow($input, $db)
         if(!$result_row){
             throw new Exception('User not found!');
         }
-        $user = $result_row['id'];
+        $user = $result_row['id'];    
 
         $book_id = $input['book_id'];
         $borrow_date = date('Y-m-d', strtotime($input['borrow_date']));
@@ -158,9 +158,8 @@ function addBorrow($input, $db)
 
             $return_date = date('Y-m-d', strtotime($input['return_date']));
         }
-
         $statement = "INSERT INTO book_borrows (user_id, book_id, borrow_date, return_date)
-                    VALUES ('$user', '$book_id', $borrow_date, '$return_date')";
+                    VALUES ('$user', '$book_id', '$borrow_date', '$return_date')";
 
         $create = $db->query($statement);
 

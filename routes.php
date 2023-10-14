@@ -1,7 +1,8 @@
 <?php
 $routes = [
-    'authors' => 'authors.php',
-    'books' => 'books.php',
-    'borrows' => 'borrows.php',
-    '/'     => 'index.php',
+    'authors'   => 'authors.php',
+    'books'     => 'books.php',
+    'borrows'   => 'borrows.php',
+    'users'     => 'users.php',
+    '/'         => 'index.php',
 ];
