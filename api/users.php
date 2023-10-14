@@ -25,6 +25,10 @@ if(strpos($url, '/users') === 0 && $_SERVER['REQUEST_METHOD'] == 'GET'){
         'data' => $users
     ]);
 }
+else{
+    http_response_code(503);
+    echo json_encode(['error' => 'Service Unavailable']);
+}
 
 function searchUsers($db, $search)
 {
@@ -50,8 +54,8 @@ function searchUsers($db, $search)
 
     $result = $db->query($sql);
 
+    $users = [];
     if ($result && $result->num_rows > 0) {
-        $users = [];
         while ($result_row = $result->fetch_assoc()) {
             $user = [
                 'id' => $result_row['id'],

@@ -115,6 +115,10 @@ if (
         'data'      => ['id' => $bookId]
     ]);
 }
+else{
+    http_response_code(503);
+    echo json_encode(['error' => 'Service Unavailable']);
+}
 
 
 function getAllbooks($db)

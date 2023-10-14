@@ -114,6 +114,10 @@ if (
         'data'      => $borrow
     ]);
 }
+else{
+    http_response_code(503);
+    echo json_encode(['error' => 'Service Unavailable']);
+}
 
 
 function getAllborrows($db)

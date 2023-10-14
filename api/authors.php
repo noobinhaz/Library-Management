@@ -138,6 +138,10 @@ if (
         'data'      => ['id' => $authorId]
     ]);
 }
+else{
+    http_response_code(503);
+    echo json_encode(['error' => 'Service Unavailable']);
+}
 
 
 function getAllAuthors($db)
