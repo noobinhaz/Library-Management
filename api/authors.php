@@ -17,18 +17,19 @@ header('Content-Type: application/json');
 
 // Authors CRUD Operations
 
-if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'GET') {
-    $authors = getAllAuthors($dbConn);
+if (strpos($url, '/authors') === 0 && $_SERVER['REQUEST_METHOD'] == 'GET') {
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Default to page 1
+    $search = isset($_GET['search']) ? $_GET['search'] : '';
+    $limit = isset($_GET['limit']) ? $_GET['limit'] : 10;
 
+    $authors = getAuthorsWithPagination($dbConn, $page, $search, $limit);
 
     echo json_encode([
         'isSuccess' => true,
         'message'   => !empty($authors) ? '' : 'No Authors Available',
         'data'      => $authors
     ]);
-}
-
-if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'POST') {
+} else if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         //code...
         $input = $_POST;
@@ -56,9 +57,7 @@ if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'POST') {
             'data'      => []
         ]);
     }
-}
-
-if (preg_match("/authors\/(\d+)\/books/", $url, $matches) && $_SERVER['REQUEST_METHOD'] == 'GET') {
+} else if (preg_match("/authors\/(\d+)\/books/", $url, $matches) && $_SERVER['REQUEST_METHOD'] == 'GET') {
 
     $authorId = $matches[1];
 
@@ -71,9 +70,7 @@ if (preg_match("/authors\/(\d+)\/books/", $url, $matches) && $_SERVER['REQUEST_M
     ]);
 
     return $books;
-}
-
-if (
+} else if (
     preg_match("/authors\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'GET'
 ) {
@@ -87,9 +84,7 @@ if (
     ]);
 
     return $author;
-}
-
-if (
+} else if (
     preg_match("/authors\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'PATCH'
 ) {
@@ -124,9 +119,7 @@ if (
         'message'   => $update ? '' : 'Could not update',
         'data'      => $author
     ]);
-}
-
-if (
+} else if (
     preg_match("/authors\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'DELETE'
 ) {
@@ -137,31 +130,40 @@ if (
         'message'   => 'Deleted ' . ($deleteStatus ? 'Success' : 'Failed'),
         'data'      => ['id' => $authorId]
     ]);
-}
-else{
+} else {
     http_response_code(503);
     echo json_encode(['error' => 'Service Unavailable']);
 }
 
 
-function getAllAuthors($db)
+function getAuthorsWithPagination($db, $page, $search, $limit)
 {
-    $statement = "SELECT * FROM authors";
+
+    $offset = ($page - 1) * $limit;
+
+    $searchCondition = '';
+    if (!empty($search)) {
+        $searchCondition = " WHERE name LIKE '%$search%'";
+    }
+
+    $statement = "SELECT * FROM authors" . $searchCondition . " LIMIT $limit OFFSET $offset";
     $result = $db->query($statement);
 
     if ($result && $result->num_rows > 0) {
         $authors = [];
         while ($result_row = $result->fetch_assoc()) {
             $author = [
-                'id' => $result_row['id'],
+                'id'   => $result_row['id'],
                 'name' => $result_row['name'],
-                'dob'   => $result_row['dob']
+                'dob'  => $result_row['dob']
             ];
             $authors[] = $author;
         }
     }
+
     return $authors;
 }
+
 
 function addAuthor($input, $db)
 {
