@@ -16,8 +16,12 @@ $dbConn = $dbInstance->connect($db);
 
 // borrows CRUD Operations
 
-if ($url == '/borrows' && $_SERVER['REQUEST_METHOD'] == 'GET') {
-    $borrows = getAllborrows($dbConn);
+if (strpos($url, '/borrows') === 0 && $_SERVER['REQUEST_METHOD'] == 'GET') {
+    $page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
+    $search = !empty($_GET['search']) ? $_GET['search'] : '';
+    $limit = !empty($_GET['limit']) ? $_GET['limit'] : 10;
+
+    $borrows = getAllborrows($dbConn, $page, $limit, $search);
     
     echo json_encode([
         'isSuccess' => true,
@@ -120,10 +124,20 @@ else{
 }
 
 
-function getAllborrows($db)
+function getAllborrows($db, $page, $limit, $search)
 {
+    $offset = ($page - 1) * $limit;
+
+    $searchCondition = '';
+    
+    if (!empty($search)) {
+        $searchCondition = " WHERE books.name LIKE '%$search%' OR isbn_code LIKE '%$search%' OR users.email LIKE '%$search%' ";
+    }
+    
     $statement = "SELECT book_borrows.id, users.email, books.name as book_name, book_borrows.borrow_date, book_borrows.return_date 
-    FROM library_db.book_borrows LEFT JOIN books ON books.id = book_borrows.book_id LEFT JOIN users ON users.id = book_borrows.user_id;";
+    FROM library_db.book_borrows LEFT JOIN books ON books.id = book_borrows.book_id LEFT JOIN users ON users.id = book_borrows.user_id 
+    $searchCondition LIMIT $limit OFFSET $offset;";
+
     $result = $db->query($statement);
 
     $borrows = [];
