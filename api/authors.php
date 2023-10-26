@@ -18,9 +18,9 @@ header('Content-Type: application/json');
 // Authors CRUD Operations
 
 if (strpos($url, '/authors') === 0 && $_SERVER['REQUEST_METHOD'] == 'GET') {
-    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Default to page 1
-    $search = isset($_GET['search']) ? $_GET['search'] : '';
-    $limit = isset($_GET['limit']) ? $_GET['limit'] : 10;
+    $page = !empty($_GET['page']) ? (int)$_GET['page'] : 1; // Default to page 1
+    $search = !empty($_GET['search']) ? $_GET['search'] : '';
+    $limit = !empty($_GET['limit']) ? $_GET['limit'] : 10;
 
     $authors = getAuthorsWithPagination($dbConn, $page, $search, $limit);
 
