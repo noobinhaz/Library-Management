@@ -47,9 +47,9 @@ function searchUsers($db, $search)
 
     if (count($whereClauses) > 0) {
         $whereClause = implode(' AND ', $whereClauses);
-        $sql = "SELECT * FROM users WHERE $whereClause";
+        $sql = "SELECT * FROM users WHERE $whereClause ORDER BY id DESC;";
     } else {
-        $sql = "SELECT * FROM users";
+        $sql = "SELECT * FROM users ORDER BY id DESC;";
     }
 
     $result = $db->query($sql);

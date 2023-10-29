@@ -17,19 +17,7 @@ header('Content-Type: application/json');
 
 // Authors CRUD Operations
 
-if (strpos($url, '/authors') === 0 && $_SERVER['REQUEST_METHOD'] == 'GET') {
-    $page = !empty($_GET['page']) ? (int)$_GET['page'] : 1; // Default to page 1
-    $search = !empty($_GET['search']) ? $_GET['search'] : '';
-    $limit = !empty($_GET['limit']) ? $_GET['limit'] : 10;
-
-    $authors = getAuthorsWithPagination($dbConn, $page, $search, $limit);
-
-    echo json_encode([
-        'isSuccess' => true,
-        'message'   => !empty($authors) ? '' : 'No Authors Available',
-        'data'      => $authors
-    ]);
-} else if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($url == '/authors' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         //code...
         $input = $_POST;
@@ -130,6 +118,18 @@ if (strpos($url, '/authors') === 0 && $_SERVER['REQUEST_METHOD'] == 'GET') {
         'message'   => 'Deleted ' . ($deleteStatus ? 'Success' : 'Failed'),
         'data'      => ['id' => $authorId]
     ]);
+} else if (strpos($url, '/authors') === 0 && $_SERVER['REQUEST_METHOD'] == 'GET') {
+    $page = !empty($_GET['page']) ? (int)$_GET['page'] : 1; // Default to page 1
+    $search = !empty($_GET['search']) ? $_GET['search'] : '';
+    $limit = !empty($_GET['limit']) ? $_GET['limit'] : 10;
+
+    $authors = getAuthorsWithPagination($dbConn, $page, $search, $limit);
+
+    echo json_encode([
+        'isSuccess' => true,
+        'message'   => !empty($authors) ? '' : 'No Authors Available',
+        'data'      => $authors
+    ]);
 } else {
     http_response_code(503);
     echo json_encode(['error' => 'Service Unavailable']);
@@ -146,7 +146,7 @@ function getAuthorsWithPagination($db, $page, $search, $limit)
         $searchCondition = " WHERE name LIKE '%$search%'";
     }
 
-    $statement = "SELECT * FROM authors" . $searchCondition . " LIMIT $limit OFFSET $offset";
+    $statement = "SELECT * FROM authors $searchCondition ORDER BY id DESC LIMIT $limit OFFSET $offset";
     $result = $db->query($statement);
 
     if ($result && $result->num_rows > 0) {

@@ -15,22 +15,6 @@ $dbInstance = new DB();
 $dbConn = $dbInstance->connect($db);
 
 // books CRUD Operations
-
-if (strpos($url, '/books') === 0 && $_SERVER['REQUEST_METHOD'] == 'GET') {
-    $page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
-    $search = !empty($_GET['search']) ? $_GET['search'] : '';
-    $limit = !empty($_GET['limit']) ? $_GET['limit'] : 10;
-
-    $books = getAllbooks($dbConn, $page, $search, $limit);
-
-
-    echo json_encode([
-        'isSuccess' => true,
-        'message'   => !empty($books) ? '' : 'No books Available',
-        'data'      => $books
-    ]);
-}
-
 if ($url == '/books' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     $input = $_POST;
     try {
@@ -58,7 +42,7 @@ if ($url == '/books' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-if (
+else if (
     preg_match("/books\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'GET'
 ) {
@@ -71,7 +55,7 @@ if (
     ]);
 }
 
-if (
+else if (
     preg_match("/books\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'PATCH'
 ) {
@@ -108,7 +92,7 @@ if (
     ]);
 }
 
-if (
+else if (
     preg_match("/books\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'DELETE'
 ) {
@@ -118,6 +102,19 @@ if (
         'isSuccess' => $deleteStatus,
         'message'   => 'Deleted ' . ($deleteStatus ? 'Success' : 'Failed'),
         'data'      => ['id' => $bookId]
+    ]);
+} else if (strpos($url, '/books') === 0 && $_SERVER['REQUEST_METHOD'] == 'GET') {
+    $page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
+    $search = !empty($_GET['search']) ? $_GET['search'] : '';
+    $limit = !empty($_GET['limit']) ? $_GET['limit'] : 10;
+
+    $books = getAllbooks($dbConn, $page, $search, $limit);
+
+
+    echo json_encode([
+        'isSuccess' => true,
+        'message'   => !empty($books) ? '' : 'No books Available',
+        'data'      => $books
     ]);
 } else {
     http_response_code(503);
@@ -135,7 +132,7 @@ function getAllbooks($db, $page, $search, $limit)
         $searchCondition = " WHERE books.name LIKE '%$search%' OR isbn_code LIKE '%$search%' OR sbn_code LIKE '%$search%' ";
     }
 
-    $statement = "SELECT books.id, books.name, books.version, books.release_date, authors.name AS author_name, books.isbn_code, books.sbn_code, books.shelf_position FROM library_db.books LEFT JOIN authors ON authors.id = books.author_id $searchCondition LIMIT $limit OFFSET $offset;";
+    $statement = "SELECT books.id, books.name, books.version, books.release_date, authors.name AS author_name, books.isbn_code, books.sbn_code, books.shelf_position FROM library_db.books LEFT JOIN authors ON authors.id = books.author_id $searchCondition ORDER BY books.id DESC  LIMIT $limit OFFSET $offset;";
     $result = $db->query($statement);
 
     $books = [];

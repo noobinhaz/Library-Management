@@ -16,20 +16,6 @@ $dbConn = $dbInstance->connect($db);
 
 // borrows CRUD Operations
 
-if (strpos($url, '/borrows') === 0 && $_SERVER['REQUEST_METHOD'] == 'GET') {
-    $page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
-    $search = !empty($_GET['search']) ? $_GET['search'] : '';
-    $limit = !empty($_GET['limit']) ? $_GET['limit'] : 10;
-
-    $borrows = getAllborrows($dbConn, $page, $limit, $search);
-    
-    echo json_encode([
-        'isSuccess' => true,
-        'message'   => !empty($borrows) ? '' : 'No borrows Available',
-        'data'      => $borrows
-    ]);
-}
-
 if ($url == '/borrows' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     $input = $_POST;
     try {
@@ -56,9 +42,7 @@ if ($url == '/borrows' && $_SERVER['REQUEST_METHOD'] == 'POST') {
             'data'      => []
         ]);
     }
-}
-
-if (
+}else if (
     preg_match("/borrows\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'GET'
 ) {
@@ -82,7 +66,7 @@ if (
     }
 }
 
-if (
+else if (
     preg_match("/borrows\/(\d+)/", $url, $matches) && $_SERVER['REQUEST_METHOD']
     == 'PATCH'
 ) {
@@ -117,8 +101,19 @@ if (
         'message'   => $update ? '' : 'Could not update',
         'data'      => $borrow
     ]);
-}
-else{
+}else if (strpos($url, '/borrows') === 0 && $_SERVER['REQUEST_METHOD'] == 'GET') {
+    $page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
+    $search = !empty($_GET['search']) ? $_GET['search'] : '';
+    $limit = !empty($_GET['limit']) ? $_GET['limit'] : 10;
+
+    $borrows = getAllborrows($dbConn, $page, $limit, $search);
+    
+    echo json_encode([
+        'isSuccess' => true,
+        'message'   => !empty($borrows) ? '' : 'No borrows Available',
+        'data'      => $borrows
+    ]);
+}else{
     http_response_code(503);
     echo json_encode(['error' => 'Service Unavailable']);
 }
@@ -136,7 +131,7 @@ function getAllborrows($db, $page, $limit, $search)
     
     $statement = "SELECT book_borrows.id, users.email, books.name as book_name, book_borrows.borrow_date, book_borrows.return_date 
     FROM library_db.book_borrows LEFT JOIN books ON books.id = book_borrows.book_id LEFT JOIN users ON users.id = book_borrows.user_id 
-    $searchCondition LIMIT $limit OFFSET $offset;";
+    $searchCondition ORDER BY book_borrows.id DESC LIMIT $limit OFFSET $offset;";
 
     $result = $db->query($statement);
 
