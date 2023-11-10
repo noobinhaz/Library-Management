@@ -43,10 +43,10 @@ INSERT INTO authors (name, dob) VALUES
     ('Stephen King', '1947-09-21');
 
 INSERT INTO users (name, email, password, role) VALUES
-    ('Librarian 1', 'librarian1@example.com', 'password', 'librarian'),
-    ('Librarian 2', 'librarian2@example.com', 'password', 'librarian'),
-    ('Student 1', 'student1@example.com', 'password', 'student'),
-    ('Student 2', 'student2@example.com', 'password', 'student');
+    ('Librarian 1', 'librarian1@example.com', '$2y$10$ZNiaa3B7vc0b8gW3bLuxAu6Q.IcgB/5FP24tREHdP8PIKJ8DsfZyC', 'librarian'),
+    ('Librarian 2', 'librarian2@example.com', '$2y$10$ZNiaa3B7vc0b8gW3bLuxAu6Q.IcgB/5FP24tREHdP8PIKJ8DsfZyC', 'librarian'),
+    ('Student 1', 'student1@example.com', '$2y$10$ZNiaa3B7vc0b8gW3bLuxAu6Q.IcgB/5FP24tREHdP8PIKJ8DsfZyC', 'student'),
+    ('Student 2', 'student2@example.com', '$2y$10$ZNiaa3B7vc0b8gW3bLuxAu6Q.IcgB/5FP24tREHdP8PIKJ8DsfZyC', 'student');
 
 INSERT INTO books (name, version, author_id, isbn_code, sbn_code, release_date, shelf_position) VALUES
     ('Harry Potter and the Sorcerer''s Stone', '1st Edition', 1, '9780590353427', '123-456-789-0', '1997-06-26', 'A1'),
