@@ -3,37 +3,57 @@
 // index.php
 require_once __DIR__ . '/../vendor/autoload.php';
 use App\controllers\AuthorsController;
-// require_once 'app/controllers/BooksController.php';
-// require_once 'app/controllers/BorrowsController.php';
-// require_once 'app/controllers/UsersController.php';
-// require_once 'app/controllers/AuthController.php';
 use Core\DB;
 use App\Controllers\AuthController;
+use App\Controllers\BooksController;
 
 $requestUri = $_SERVER['REQUEST_URI'];
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 
-// Define your routes here
+// Author Routes
 if (preg_match('/^\/authors\/(\d+)$/', $requestUri, $matches) && $requestMethod === 'GET') {
     $authorId = $matches[1];
-    (new AuthorsController())->show($authorId);
+    (new AuthorsController($_GET))->show($authorId);
 }elseif($requestUri == '/authors' && $_SERVER['REQUEST_METHOD'] == 'POST'){
     $request = array_merge($_GET, $_POST);
-    (new AuthorsController())->store($request);
+    (new AuthorsController($request))->store();
 }elseif(preg_match("/authors\/(\d+)\/books/", $requestUri, $matches) && $requestMethod == 'GET'){
     $authorId = $matches[1];
-    (new AuthorsController())->author_with_books($authorId);
+    $request = $_GET;
+    (new AuthorsController($request))->author_with_books($authorId);
 }elseif(preg_match("/authors\/(\d+)/", $requestUri, $matches) && $requestMethod == 'PATCH'){
     $authorId = $matches[1];
     $request = array_merge($_GET, $_POST);
-    (new AuthorsController())->update($request, $authorId);
+    $request = array_merge($request, json_decode(file_get_contents("php://input"), true));
+    (new AuthorsController($request))->update($authorId);
 }elseif(preg_match("/authors\/(\d+)/", $requestUri, $matches) && $requestMethod == 'DELETE'){
     $authorId = $matches[1];
-    (new AuthorsController())->destroy($authorId);
+    $request = $_GET;
+    (new AuthorsController($request))->destroy($authorId);
+}elseif (strpos($requestUri, '/authors') === 0 && $requestMethod == 'GET') {
+    $request = $_GET;
+    (new AuthorsController($request))->index();
+}//Book routes
+elseif (preg_match('/^\/books\/(\d+)$/', $requestUri, $matches) && $requestMethod === 'GET') {
+    $bookId = $matches[1];  
+    (new BooksController($_GET))->show($bookId);
+}elseif($requestUri == '/books' && $_SERVER['REQUEST_METHOD'] == 'POST'){
+    $request = array_merge($_GET, $_POST);
+    (new BooksController($request))->store();
+}elseif(preg_match("/books\/(\d+)/", $requestUri, $matches) && $requestMethod == 'PATCH'){
+    $bookId = $matches[1];
+    $request = array_merge($_GET, $_POST);
+    $request = array_merge($request, json_decode(file_get_contents("php://input"), true));
+    (new BooksController($request))->update($bookId);
+}elseif(preg_match("/books\/(\d+)/", $requestUri, $matches) && $requestMethod == 'DELETE'){
+    $bookId = $matches[1];
+    $request = $_GET;
+    (new BooksController($request))->destroy($bookId);
+}elseif (strpos($requestUri, '/books') === 0 && $requestMethod == 'GET') {
+    $request = $_GET;
+    (new BooksController($request))->index();
 }
-elseif (strpos($requestUri, '/authors') === 0 && $requestMethod == 'GET') {
-    (new AuthorsController())->index();
-}elseif($requestMethod=='POST' && $requestUri == '/login'){
+elseif($requestMethod=='POST' && $requestUri == '/login'){
     $request = array_merge($_GET, $_POST);
     (new AuthController())->login($request);
 }

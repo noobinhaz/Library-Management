@@ -12,7 +12,6 @@ class DB
         $config = Config::$db;
 
         if ($this->conn) {
-            echo "conn already exits";
             return $this->conn; 
         }
 

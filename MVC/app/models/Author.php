@@ -13,7 +13,7 @@ class Author
         $this->db = new DB();
     }
 
-    public function getAllAuthors($page, $search, $limit)
+    public function getAll($page, $search, $limit)
     {
 
         $db = $this->db->connect();
@@ -43,7 +43,7 @@ class Author
         return $authors;
     }
     
-    public function addAuthor($input)
+    public function addNew($input)
     {
         $db = $this->db->connect();
 
@@ -61,7 +61,7 @@ class Author
         return null;
     }
 
-    function getAuthor($id)
+    public function getSingle($id)
     {
         $db = $this->db->connect();
         $statement = "SELECT * FROM authors where id = " . $id;
@@ -70,16 +70,16 @@ class Author
         return $result_row;
     }
 
-    function updateAuthor($input, $authorId)
+    public function updateSingle($input, $authorId)
     {
         $db = $this->db->connect();
-        $fields = $this->getParams($input);
+        $fields = self::getParams($input);
         $statement = "UPDATE authors SET $fields WHERE id = " . $authorId;
         $update = $db->query($statement);
         return $update;
     }
 
-    function getParams($input)
+    protected function getParams($input)
     {
         $allowedFields = ['name', 'dob'];
         $filterParams = [];
@@ -91,14 +91,14 @@ class Author
         return implode(", ", $filterParams);
     }
 
-    function deleteAuthor($id)
+    public function deleteSingle($id)
     {
         $db = $this->db->connect();
         $statement = "DELETE FROM authors where id = " . $id;
         return $db->query($statement);
     }
 
-    function getAuthorBooks( $id)
+    public function getAuthorBooks( $id)
     {
         $db = $this->db->connect();
         $statement = "SELECT * FROM books WHERE author_id = " . $id;
