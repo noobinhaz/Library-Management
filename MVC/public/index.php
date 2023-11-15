@@ -6,6 +6,7 @@ use App\controllers\AuthorsController;
 use Core\DB;
 use App\Controllers\AuthController;
 use App\Controllers\BooksController;
+use App\Controllers\BorrowsController;
 
 $requestUri = $_SERVER['REQUEST_URI'];
 $requestMethod = $_SERVER['REQUEST_METHOD'];
@@ -52,6 +53,21 @@ elseif (preg_match('/^\/books\/(\d+)$/', $requestUri, $matches) && $requestMetho
 }elseif (strpos($requestUri, '/books') === 0 && $requestMethod == 'GET') {
     $request = $_GET;
     (new BooksController($request))->index();
+}//Borrow Routes
+elseif (preg_match('/^\/borrows\/(\d+)$/', $requestUri, $matches) && $requestMethod === 'GET') {
+    $borrowId = $matches[1];  
+    (new BorrowsController($_GET))->show($borrowId);
+}elseif($requestUri == '/books' && $_SERVER['REQUEST_METHOD'] == 'POST'){
+    $request = array_merge($_GET, $_POST);
+    (new BorrowsController($request))->store();
+}elseif(preg_match("/borrows\/(\d+)/", $requestUri, $matches) && $requestMethod == 'PATCH'){
+    $borrowId = $matches[1];
+    $request = array_merge($_GET, $_POST);
+    $request = array_merge($request, json_decode(file_get_contents("php://input"), true));
+    (new BorrowsController($request))->update($borrowId);
+}elseif (strpos($requestUri, '/borrows') === 0 && $requestMethod == 'GET') {
+    $request = $_GET;
+    (new BorrowsController($request))->index();
 }
 elseif($requestMethod=='POST' && $requestUri == '/login'){
     $request = array_merge($_GET, $_POST);
