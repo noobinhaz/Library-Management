@@ -68,14 +68,15 @@ elseif (preg_match('/^\/borrows\/(\d+)$/', $requestUri, $matches) && $requestMet
 }elseif (strpos($requestUri, '/borrows') === 0 && $requestMethod == 'GET') {
     $request = $_GET;
     (new BorrowsController($request))->index();
-}
+}//User Routes
 elseif($requestMethod=='POST' && $requestUri == '/login'){
     $request = array_merge($_GET, $_POST);
     (new AuthController())->login($request);
+}elseif($requestMethod=='GET' && strpos($requestUri, '/users') === 0){
+    $request = $_GET;
+    (new AuthController())->index($request);
 }
-// Define routes for other controllers...
 
-// Handle 404 errors
 else {
     http_response_code(404);
     echo 'Not Found Bruh';

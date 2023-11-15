@@ -4,11 +4,30 @@ namespace App\Controllers;
 
 use Core\DB;
 use core\Config;
+use App\Models\User;
 
 class AuthController
 {
+    private $model;
+
     public function __construct(){
         header('Content-Type: application/json');
+        $this->model = new User();
+    }
+
+    public function index($request){
+        $page = !empty($request['page']) ? (int)$request['page'] : 1;
+        $search = !empty($request['search']) ? $request['search'] : '';
+        $limit = !empty($request['limit']) ? $request['limit'] : 10;
+        $data = $this->model->getAll($page, $search, $limit);
+        // echo password_hash("password", PASSWORD_DEFAULT);
+        // header('Content-Type: application/json');
+        http_response_code(200);
+        echo json_encode([
+            'isSuccess' => $data !== null,
+            'message'   => $data !== null ? '' : 'No Data Found',
+            'data'      => ['data' => $data ]
+        ]);
     }
     
     public function login($request)
@@ -16,12 +35,12 @@ class AuthController
         $email = $request['email'];
         $password = $request['password'];
 
-        $user = $this->getUserByEmail($email);
+        $user = $this->model->getSingleByEmail($email);
 
         if ($user && password_verify($password, $user['password'])) {
             unset($user['password']);
-            $token = $this->generateToken($user);
-            // Return the token in the API response
+            $token = self::generateToken($user);
+            
             echo json_encode([ 'isSuccess' => true, 
                     'message' => '', 
                     'data' => [
@@ -54,17 +73,7 @@ class AuthController
         exit;
     }
 
-    private function getUserByEmail($email)
-    {
-        // Fetch user from the database by email
-        $db = (new DB())->connect();
-        $email = $db->real_escape_string($email);
-        $result = $db->query("SELECT * FROM users WHERE email = '$email'");
-
-        return $result->fetch_assoc();
-    }
-
-    public function generateToken($user)
+    private function generateToken($user)
     {
         $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
         $payload = json_encode(['iss' => Config::$issuer, 'sub' => $user, 'iat' => time(), 'exp' => time() + 3600]);
